@@ -26,3 +26,14 @@ func (s *Service) Create(ctx context.Context, team *model.Team) (*model.Team, er
 	}
 	return team, nil
 }
+
+func (s *Service) GetByName(ctx context.Context, name string) (*model.Team, error) {
+	team, err := s.repo.GetByName(ctx, name)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTeamNotFound
+		}
+		return nil, err
+	}
+	return team, nil
+}

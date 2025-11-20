@@ -2,6 +2,7 @@ package team
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -18,16 +19,16 @@ func NewHandler(router *http.ServeMux, teamService *Service) {
 		teamService: teamService,
 	}
 	router.HandleFunc("POST /team/add", handler.Create())
+	router.HandleFunc("GET /team/get", handler.Get())
 }
 
 func (h *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		parentCtx := r.Context()
-		ctx, cancel := context.WithTimeout(parentCtx, 300*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
 		defer cancel()
 		reqBody, err := req.HandleBody[TeamCreateRequestDTO](r)
 		if err != nil {
-			res.Error(w, 400, "BAD_REQUEST", "bad request")
+			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "bad request")
 			return
 		}
 		teamToCreate := ToDomain(*reqBody)
@@ -35,14 +36,40 @@ func (h *Handler) Create() http.HandlerFunc {
 		if err != nil {
 			switch err {
 			case ErrTeamExists:
-				res.Error(w, 400, "BAD_REQUEST", err.Error())
+				res.Error(w, http.StatusBadRequest, "BAD_REQUEST", err.Error())
 			default:
-				res.Error(w, 500, "UNKNOWN_ERR", "unknown error")
+				res.Error(w, http.StatusInternalServerError, "UNKNOWN_ERR", "unknown error")
 
 			}
 			return
 		}
 		response := ToResponse(createdTeam)
-		res.JSON(w, 201, response)
+		res.JSON(w, http.StatusCreated, response)
+	}
+}
+
+func (h *Handler) Get() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		defer cancel()
+
+		teamName := r.URL.Query().Get("team_name")
+		if teamName == "" {
+			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "team_name is required")
+			return
+		}
+
+		foundTeam, err := h.teamService.GetByName(ctx, teamName)
+		if err != nil {
+			if errors.Is(err, ErrTeamNotFound) {
+				res.Error(w, http.StatusNotFound, "NOT_FOUND", err.Error())
+				return
+			}
+			res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
+			return
+		}
+
+		resp := ToTeamInfoDTO(foundTeam)
+		res.JSON(w, http.StatusOK, resp)
 	}
 }

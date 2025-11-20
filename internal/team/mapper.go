@@ -42,3 +42,23 @@ func ToResponse(t *model.Team) CreateTeamResponseDTO {
 		Team: teamInfo,
 	}
 }
+
+func ToTeamInfoDTO(t *model.Team) TeamInfoDTO {
+	if t == nil {
+		return TeamInfoDTO{}
+	}
+
+	members := make([]TeamMemberDTO, len(t.Members))
+	for i, m := range t.Members {
+		members[i] = TeamMemberDTO{
+			UserID:   m.ID,
+			Username: m.Username,
+			IsActive: m.IsActive,
+		}
+	}
+
+	return TeamInfoDTO{
+		TeamName: t.Name,
+		Members:  members,
+	}
+}

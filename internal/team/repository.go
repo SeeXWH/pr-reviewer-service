@@ -37,3 +37,16 @@ func (r *Repository) Create(ctx context.Context, team *model.Team) error {
 		return nil
 	})
 }
+
+func (r *Repository) GetByName(ctx context.Context, teamName string) (*model.Team, error) {
+	var team model.Team
+	err := r.db.PostgresDb.WithContext(ctx).
+		Preload("Members").
+		First(&team, "team_name = ?", teamName).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &team, nil
+}
