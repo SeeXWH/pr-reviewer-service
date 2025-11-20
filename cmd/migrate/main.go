@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/SeeXWH/pr-reviewer-service/internal/model"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,12 +24,14 @@ func main() {
 		os.Getenv("POSTGRES_DB"),
 		"disable")
 	log.Println(DSN)
-	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Database connected. Running AutoMigrate...")
-	err = db.AutoMigrate()
+	err = db.AutoMigrate(&model.Team{}, &model.User{}, &model.PullRequest{})
 	if err != nil {
 		log.Fatal(err)
 	}
