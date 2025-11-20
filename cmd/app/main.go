@@ -8,6 +8,7 @@ import (
 
 	"github.com/SeeXWH/pr-reviewer-service/configs"
 	"github.com/SeeXWH/pr-reviewer-service/internal/team"
+	"github.com/SeeXWH/pr-reviewer-service/internal/user"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/db"
 )
 
@@ -19,7 +20,12 @@ func main() {
 	mainRouter := http.NewServeMux()
 
 	teamRepository := team.NewRepository(db)
+	userRepository := user.NewRepository(db)
+
 	teamService := team.NewService(teamRepository)
+	userService := user.NewService(userRepository)
+
+	user.NewHandler(mainRouter, userService)
 	team.NewHandler(mainRouter, teamService)
 
 	server := http.Server{
