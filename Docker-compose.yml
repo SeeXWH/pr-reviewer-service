@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:14-alpine
+    platform: linux/amd64
+    container_name: postgres
+    ports:
+      - "5430:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+  pr-reviewer-service-migrator:
+    build:
+      context: .
+    container_name: pr-reviewer-migrator
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: [ "/migrate" ]
+    restart: on-failure
+
+  pr-reviewer-service:
+    build:
+      context: .
+    container_name: pr-reviewer-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pr-reviewer-service-migrator:
+        condition: service_completed_successfully
+    restart: on-failure
+volumes:
+  postgres_data:
