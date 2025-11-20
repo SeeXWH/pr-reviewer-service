@@ -37,3 +37,15 @@ func (s *Service) GetReviews(ctx context.Context, userID string) ([]model.PullRe
 	}
 	return prs, nil
 }
+
+func (s *Service) GetReviewCandidates(ctx context.Context, teamName string, excludeUserID string) ([]model.User, error) {
+	return s.repo.GetReviewCandidates(ctx, teamName, excludeUserID)
+}
+
+func (s *Service) GetByID(ctx context.Context, id string) (*model.User, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *Service) GetReplacementCandidate(ctx context.Context, teamName string, excludeUserIDs []string) (*model.User, error) {
+	return s.repo.GetReplacementCandidate(ctx, teamName, excludeUserIDs)
+}

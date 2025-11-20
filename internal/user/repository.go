@@ -52,3 +52,37 @@ func (r *Repository) GetUserReviews(ctx context.Context, userID string) ([]model
 	}
 	return prs, nil
 }
+
+func (r *Repository) GetReviewCandidates(ctx context.Context, teamName string, authorID string) ([]model.User, error) {
+	var candidates []model.User
+	err := r.db.PostgresDb.WithContext(ctx).
+		Where("team_name = ? AND is_active = ? AND user_id != ?", teamName, true, authorID).
+		Order("RANDOM()").
+		Limit(2).
+		Find(&candidates).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return candidates, nil
+}
+
+func (r *Repository) GetByID(ctx context.Context, userID string) (*model.User, error) {
+	var user model.User
+	err := r.db.PostgresDb.WithContext(ctx).First(&user, "user_id = ?", userID).Error
+	return &user, err
+}
+
+func (r *Repository) GetReplacementCandidate(ctx context.Context, teamName string, excludeUserIDs []string) (*model.User, error) {
+	var candidate model.User
+	err := r.db.PostgresDb.WithContext(ctx).
+		Where("team_name = ? AND is_active = ?", teamName, true).
+		Not("user_id", excludeUserIDs).
+		Order("RANDOM()").
+		First(&candidate).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &candidate, nil
+}

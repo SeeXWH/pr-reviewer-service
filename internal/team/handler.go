@@ -34,12 +34,13 @@ func (h *Handler) Create() http.HandlerFunc {
 		teamToCreate := ToDomain(*reqBody)
 		createdTeam, err := h.teamService.Create(ctx, &teamToCreate)
 		if err != nil {
-			switch err {
-			case ErrTeamExists:
+			switch {
+			case errors.Is(err, ErrTeamExists):
 				res.Error(w, http.StatusBadRequest, "BAD_REQUEST", err.Error())
+				return
 			default:
 				res.Error(w, http.StatusInternalServerError, "UNKNOWN_ERR", "unknown error")
-
+				return
 			}
 			return
 		}
@@ -61,12 +62,14 @@ func (h *Handler) Get() http.HandlerFunc {
 
 		foundTeam, err := h.teamService.GetByName(ctx, teamName)
 		if err != nil {
-			if errors.Is(err, ErrTeamNotFound) {
+			switch {
+			case errors.Is(err, ErrTeamNotFound):
 				res.Error(w, http.StatusNotFound, "NOT_FOUND", err.Error())
 				return
+			default:
+				res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
+				return
 			}
-			res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
-			return
 		}
 
 		resp := ToTeamInfoDTO(foundTeam)

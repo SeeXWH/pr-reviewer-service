@@ -2,11 +2,11 @@ package user
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
 
+	"github.com/SeeXWH/pr-reviewer-service/pkg/req"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/res"
 )
 
@@ -26,8 +26,8 @@ func (h *Handler) UpdateStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
 		defer cancel()
-		var reqBody SetActiveRequestDTO
-		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		reqBody, err := req.HandleBody[SetActiveRequestDTO](r)
+		if err != nil {
 			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "invalid json")
 			return
 		}
@@ -39,13 +39,15 @@ func (h *Handler) UpdateStatus() http.HandlerFunc {
 
 		updatedUser, err := h.userService.SetIsActive(ctx, reqBody.UserID, reqBody.IsActive)
 		if err != nil {
-			if errors.Is(err, ErrUserNotFound) {
+			switch {
+			case errors.Is(err, ErrUserNotFound):
 				msg := "User " + reqBody.UserID + " not found"
 				res.Error(w, http.StatusNotFound, "NOT_FOUND", msg)
 				return
+			default:
+				res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
+				return
 			}
-			res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
-			return
 		}
 
 		resp := ToResponse(updatedUser)
@@ -66,16 +68,17 @@ func (h *Handler) GetReviews() http.HandlerFunc {
 
 		prModels, err := h.userService.GetReviews(ctx, userID)
 		if err != nil {
-			if errors.Is(err, ErrUserNotFound) {
+			switch {
+			case errors.Is(err, ErrUserNotFound):
 				res.Error(w, http.StatusNotFound, "NOT_FOUND", "User "+userID+" not found")
 				return
+			default:
+				res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
+				return
 			}
-			res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "unknown error")
-			return
 		}
 
 		resp := ToReviewsResponse(userID, prModels)
-
 		res.JSON(w, http.StatusOK, resp)
 	}
 }

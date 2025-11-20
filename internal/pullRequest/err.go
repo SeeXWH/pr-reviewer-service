@@ -1,1 +1,12 @@
 package pullRequest
+
+import "errors"
+
+var (
+	ErrPRExists       = errors.New("PR id already exists")
+	ErrAuthorNotFound = errors.New("Author not found")
+	ErrPRNotFound     = errors.New("PR not found")
+	ErrPRMerged       = errors.New("cannot reassign on merged PR")
+	ErrNotAssigned    = errors.New("reviewer is not assigned to this PR")
+	ErrNoCandidate    = errors.New("no active replacement candidate in team")
+)
