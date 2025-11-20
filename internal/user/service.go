@@ -26,3 +26,14 @@ func (s *Service) SetIsActive(ctx context.Context, userID string, isActive bool)
 	}
 	return updatedUser, nil
 }
+
+func (s *Service) GetReviews(ctx context.Context, userID string) ([]model.PullRequest, error) {
+	prs, err := s.repo.GetUserReviews(ctx, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+	return prs, nil
+}
