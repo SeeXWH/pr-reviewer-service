@@ -19,7 +19,9 @@ func NewPostgresDb(conf *configs.Config) *PostgresDb {
 		conf.DB.Port,
 		conf.DB.Dbname,
 		"disable")
-	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{
+		TranslateError: true,
+	})
 	if err != nil {
 		panic(err)
 	}

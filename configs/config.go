@@ -23,10 +23,10 @@ func Load() *Config {
 	return &Config{
 		DB: DB{
 			Username: os.Getenv("POSTGRES_USER"),
-			Password: os.Getenv("12345"),
-			Dbname:   os.Getenv("PrDB"),
-			Host:     os.Getenv("localhost"),
-			Port:     os.Getenv("5432"),
+			Password: os.Getenv("POSTGRES_PASSWORD"),
+			Dbname:   os.Getenv("POSTGRES_DB"),
+			Host:     os.Getenv("POSTGRES_HOST"),
+			Port:     os.Getenv("POSTGRES_PORT"),
 		},
 	}
 }
