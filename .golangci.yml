@@ -1,0 +1,30 @@
+run:
+  timeout: 5m
+  go: '1.25'
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - revive
+    - goimports
+    - goconst
+    - gocyclo
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  goconst:
+    min-occurrences: 3
+  goimports:
+    local-prefixes: github.com/SeeXWH/pr-reviewer-service
+
+issues:
+  exclude-dirs:
+    - docs

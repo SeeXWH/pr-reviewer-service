@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/SeeXWH/pr-reviewer-service/configs"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -1,4 +1,4 @@
-package pullRequest
+package pullrequest
 
 import (
 	"context"
@@ -6,7 +6,12 @@ import (
 	"time"
 
 	"github.com/SeeXWH/pr-reviewer-service/internal/model"
+
 	"gorm.io/gorm"
+)
+
+const (
+	MergeStatus = "MERGED"
 )
 
 type Service struct {
@@ -62,10 +67,10 @@ func (s *Service) Merge(ctx context.Context, prID string) (*model.PullRequest, e
 		}
 		return nil, err
 	}
-	if pr.Status == "MERGED" {
+	if pr.Status == MergeStatus {
 		return pr, nil
 	}
-	pr.Status = "MERGED"
+	pr.Status = MergeStatus
 	now := time.Now()
 	pr.MergedAt = &now
 	if err = s.repo.Update(ctx, pr); err != nil {
@@ -106,7 +111,7 @@ func (s *Service) getAndValidatePR(ctx context.Context, prID string) (*model.Pul
 		}
 		return nil, err
 	}
-	if pr.Status == "MERGED" {
+	if pr.Status == MergeStatus {
 		return nil, ErrPRMerged
 	}
 	return pr, nil

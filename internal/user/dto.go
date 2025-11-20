@@ -5,11 +5,11 @@ type SetActiveRequestDTO struct {
 	IsActive bool   `json:"is_active"`
 }
 
-type UserResponseWrapper struct {
-	User UserDTO `json:"user"`
+type ResponseWrapper struct {
+	User DTO `json:"user"`
 }
 
-type UserDTO struct {
+type DTO struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	TeamName string `json:"team_name"`
@@ -23,7 +23,7 @@ type PullRequestShortDTO struct {
 	Status   string `json:"status"`
 }
 
-type UserReviewsResponseDTO struct {
+type ReviewsResponseDTO struct {
 	UserID       string                `json:"user_id"`
 	PullRequests []PullRequestShortDTO `json:"pull_requests"`
 }

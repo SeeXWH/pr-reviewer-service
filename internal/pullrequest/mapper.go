@@ -1,4 +1,4 @@
-package pullRequest
+package pullrequest
 
 import "github.com/SeeXWH/pr-reviewer-service/internal/model"
 

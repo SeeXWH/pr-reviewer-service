@@ -6,12 +6,12 @@ import (
 	"github.com/SeeXWH/pr-reviewer-service/internal/model"
 )
 
-type TeamProvider interface {
+type Provider interface {
 	Create(context.Context, *model.Team) (*model.Team, error)
 	GetByName(context.Context, string) (*model.Team, error)
 }
 
-type TeamStorer interface {
+type Storer interface {
 	Create(context.Context, *model.Team) error
 	GetByName(context.Context, string) (*model.Team, error)
 }

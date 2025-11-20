@@ -2,7 +2,7 @@ package team
 
 import "github.com/SeeXWH/pr-reviewer-service/internal/model"
 
-func ToDomain(req TeamCreateRequestDTO) model.Team {
+func ToDomain(req CreateRequestDTO) model.Team {
 	members := make([]model.User, len(req.Members))
 
 	for i, m := range req.Members {
@@ -24,16 +24,16 @@ func ToResponse(t *model.Team) CreateTeamResponseDTO {
 		return CreateTeamResponseDTO{}
 	}
 
-	members := make([]TeamMemberDTO, len(t.Members))
+	members := make([]MemberDTO, len(t.Members))
 	for i, m := range t.Members {
-		members[i] = TeamMemberDTO{
+		members[i] = MemberDTO{
 			UserID:   m.ID,
 			Username: m.Username,
 			IsActive: m.IsActive,
 		}
 	}
 
-	teamInfo := TeamInfoDTO{
+	teamInfo := InfoDTO{
 		TeamName: t.Name,
 		Members:  members,
 	}
@@ -43,21 +43,21 @@ func ToResponse(t *model.Team) CreateTeamResponseDTO {
 	}
 }
 
-func ToTeamInfoDTO(t *model.Team) TeamInfoDTO {
+func ToTeamInfoDTO(t *model.Team) InfoDTO {
 	if t == nil {
-		return TeamInfoDTO{}
+		return InfoDTO{}
 	}
 
-	members := make([]TeamMemberDTO, len(t.Members))
+	members := make([]MemberDTO, len(t.Members))
 	for i, m := range t.Members {
-		members[i] = TeamMemberDTO{
+		members[i] = MemberDTO{
 			UserID:   m.ID,
 			Username: m.Username,
 			IsActive: m.IsActive,
 		}
 	}
 
-	return TeamInfoDTO{
+	return InfoDTO{
 		TeamName: t.Name,
 		Members:  members,
 	}

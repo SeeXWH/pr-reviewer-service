@@ -2,13 +2,13 @@ package user
 
 import "github.com/SeeXWH/pr-reviewer-service/internal/model"
 
-func ToResponse(u *model.User) UserResponseWrapper {
+func ToResponse(u *model.User) ResponseWrapper {
 	if u == nil {
-		return UserResponseWrapper{}
+		return ResponseWrapper{}
 	}
 
-	return UserResponseWrapper{
-		User: UserDTO{
+	return ResponseWrapper{
+		User: DTO{
 			UserID:   u.ID,
 			Username: u.Username,
 			TeamName: u.TeamName,
@@ -17,7 +17,7 @@ func ToResponse(u *model.User) UserResponseWrapper {
 	}
 }
 
-func ToReviewsResponse(userID string, prs []model.PullRequest) UserReviewsResponseDTO {
+func ToReviewsResponse(userID string, prs []model.PullRequest) ReviewsResponseDTO {
 	prDTOs := make([]PullRequestShortDTO, 0, len(prs))
 
 	for _, pr := range prs {
@@ -29,7 +29,7 @@ func ToReviewsResponse(userID string, prs []model.PullRequest) UserReviewsRespon
 		})
 	}
 
-	return UserReviewsResponseDTO{
+	return ReviewsResponseDTO{
 		UserID:       userID,
 		PullRequests: prDTOs,
 	}

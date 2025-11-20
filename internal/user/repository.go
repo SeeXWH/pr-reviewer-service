@@ -5,6 +5,7 @@ import (
 
 	"github.com/SeeXWH/pr-reviewer-service/internal/model"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/db"
+
 	"gorm.io/gorm"
 )
 

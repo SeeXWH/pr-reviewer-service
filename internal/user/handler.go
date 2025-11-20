@@ -11,10 +11,10 @@ import (
 )
 
 type Handler struct {
-	userService UserProvider
+	userService Provider
 }
 
-func NewHandler(router *http.ServeMux, userService UserProvider) {
+func NewHandler(router *http.ServeMux, userService Provider) {
 	handler := &Handler{
 		userService: userService,
 	}

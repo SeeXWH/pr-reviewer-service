@@ -11,10 +11,10 @@ import (
 )
 
 type Handler struct {
-	teamService TeamProvider
+	teamService Provider
 }
 
-func NewHandler(router *http.ServeMux, teamService TeamProvider) {
+func NewHandler(router *http.ServeMux, teamService Provider) {
 	handler := &Handler{
 		teamService: teamService,
 	}
@@ -26,7 +26,7 @@ func (h *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
 		defer cancel()
-		reqBody, err := req.HandleBody[TeamCreateRequestDTO](r)
+		reqBody, err := req.HandleBody[CreateRequestDTO](r)
 		if err != nil {
 			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "bad request")
 			return
@@ -42,7 +42,6 @@ func (h *Handler) Create() http.HandlerFunc {
 				res.Error(w, http.StatusInternalServerError, "UNKNOWN_ERR", "unknown error")
 				return
 			}
-			return
 		}
 		response := ToResponse(createdTeam)
 		res.JSON(w, http.StatusCreated, response)

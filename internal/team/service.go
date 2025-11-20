@@ -5,14 +5,15 @@ import (
 	"errors"
 
 	"github.com/SeeXWH/pr-reviewer-service/internal/model"
+
 	"gorm.io/gorm"
 )
 
 type Service struct {
-	repo TeamStorer
+	repo Storer
 }
 
-func NewService(repo TeamStorer) *Service {
+func NewService(repo Storer) *Service {
 	return &Service{repo: repo}
 }
 
