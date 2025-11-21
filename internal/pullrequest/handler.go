@@ -3,21 +3,22 @@ package pullrequest
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/SeeXWH/pr-reviewer-service/configs"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/req"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/res"
 )
 
 type Handler struct {
 	prService PRProvider
+	conf      *configs.Config
 }
 
-func NewHandler(router *http.ServeMux, prService PRProvider) {
+func NewHandler(router *http.ServeMux, prService PRProvider, conf *configs.Config) {
 	handler := Handler{
 		prService: prService,
+		conf:      conf,
 	}
 
 	router.HandleFunc("POST /pullRequest/create", handler.Create())
@@ -27,12 +28,11 @@ func NewHandler(router *http.ServeMux, prService PRProvider) {
 
 func (h *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 		reqBody, err := req.HandleBody[CreatePRRequestDTO](r)
 		if err != nil {
 			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "invalid json")
-			fmt.Println(err.Error())
 			return
 		}
 
@@ -64,7 +64,7 @@ func (h *Handler) Create() http.HandlerFunc {
 
 func (h *Handler) Merge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 		reqBody, err := req.HandleBody[MergePRRequestDTO](r)
 		if err != nil {
@@ -95,7 +95,7 @@ func (h *Handler) Merge() http.HandlerFunc {
 
 func (h *Handler) Reassign() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 
 		reqBody, err := req.HandleBody[ReassignPRRequestDTO](r)

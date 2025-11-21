@@ -4,19 +4,21 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
+	"github.com/SeeXWH/pr-reviewer-service/configs"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/req"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/res"
 )
 
 type Handler struct {
 	teamService Provider
+	conf        *configs.Config
 }
 
-func NewHandler(router *http.ServeMux, teamService Provider) {
+func NewHandler(router *http.ServeMux, teamService Provider, conf *configs.Config) {
 	handler := &Handler{
 		teamService: teamService,
+		conf:        conf,
 	}
 	router.HandleFunc("POST /team/add", handler.Create())
 	router.HandleFunc("GET /team/get", handler.Get())
@@ -24,7 +26,7 @@ func NewHandler(router *http.ServeMux, teamService Provider) {
 
 func (h *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 		reqBody, err := req.HandleBody[CreateRequestDTO](r)
 		if err != nil {
@@ -50,7 +52,7 @@ func (h *Handler) Create() http.HandlerFunc {
 
 func (h *Handler) Get() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 
 		teamName := r.URL.Query().Get("team_name")

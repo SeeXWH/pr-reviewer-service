@@ -2,6 +2,7 @@ package configs
 
 import (
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -20,11 +21,18 @@ type DB struct {
 }
 
 type App struct {
-	Port string
+	Port    string
+	TimeOut time.Duration
 }
 
 func Load() *Config {
 	_ = godotenv.Load(".env")
+	timeoutStr := os.Getenv("APP_TIMEOUT")
+
+	timeout, err := time.ParseDuration(timeoutStr)
+	if err != nil {
+		timeout = 300 * time.Millisecond
+	}
 	return &Config{
 		DB: DB{
 			Username: os.Getenv("POSTGRES_USER"),
@@ -34,7 +42,8 @@ func Load() *Config {
 			Port:     os.Getenv("POSTGRES_PORT"),
 		},
 		App: App{
-			Port: os.Getenv("APP_PORT"),
+			Port:    os.Getenv("APP_PORT"),
+			TimeOut: timeout,
 		},
 	}
 }

@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"bufio"
-	"fmt"
+	"errors"
 	"net"
 	"net/http"
 )
 
 type WrapperWriter struct {
 	http.ResponseWriter
+
 	StatusCode    int
 	headerWritten bool
 }
@@ -39,7 +40,7 @@ func (w *WrapperWriter) Write(b []byte) (int, error) {
 func (w *WrapperWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker, ok := w.ResponseWriter.(http.Hijacker)
 	if !ok {
-		return nil, nil, fmt.Errorf("the wrapped ResponseWriter does not implement http.Hijacker")
+		return nil, nil, errors.New("the wrapped ResponseWriter does not implement http.Hijacker")
 	}
 	return hijacker.Hijack()
 }

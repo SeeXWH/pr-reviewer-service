@@ -11,17 +11,17 @@ import (
 )
 
 type Repository struct {
-	db *db.PostgresDb
+	db *db.PostgresDB
 }
 
-func NewRepository(db *db.PostgresDb) *Repository {
+func NewRepository(db *db.PostgresDB) *Repository {
 	return &Repository{
 		db: db,
 	}
 }
 
 func (r *Repository) Create(ctx context.Context, team *model.Team) error {
-	return r.db.PostgresDb.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	return r.db.PostgresDB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&model.Team{Name: team.Name}).Error; err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (r *Repository) Create(ctx context.Context, team *model.Team) error {
 
 func (r *Repository) GetByName(ctx context.Context, teamName string) (*model.Team, error) {
 	var team model.Team
-	err := r.db.PostgresDb.WithContext(ctx).
+	err := r.db.PostgresDB.WithContext(ctx).
 		Preload("Members").
 		First(&team, "team_name = ?", teamName).Error
 

@@ -17,14 +17,14 @@ func main() {
 	log.Println("Start migration")
 	temp := time.Now()
 	_ = godotenv.Load()
-	DSN := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s",
 		os.Getenv("POSTGRES_HOST"),
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
 		os.Getenv("POSTGRES_PORT"),
 		os.Getenv("POSTGRES_DB"),
 		"disable")
-	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

@@ -7,6 +7,7 @@ type PullRequest struct {
 	Name      string
 	Status    string
 	AuthorID  string
+	Author    User    `gorm:"foreignKey:AuthorID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Reviewers []*User `gorm:"many2many:pr_reviewers;"`
 	CreatedAt time.Time
 	MergedAt  *time.Time

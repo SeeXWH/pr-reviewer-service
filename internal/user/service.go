@@ -28,14 +28,14 @@ func (s *Service) SetIsActive(ctx context.Context, userID string, isActive bool)
 	updatedUser, err := s.repo.UpdateActiveStatus(ctx, userID, isActive)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Warn("failed to update status: user not found")
+			log.WarnContext(ctx, "failed to update status: user not found")
 			return nil, ErrUserNotFound
 		}
-		log.Error("failed to update active status", "error", err)
+		log.ErrorContext(ctx, "failed to update active status", "error", err)
 		return nil, err
 	}
 
-	log.Info("user active status updated")
+	log.InfoContext(ctx, "user active status updated")
 	return updatedUser, nil
 }
 
@@ -47,18 +47,22 @@ func (s *Service) GetReviews(ctx context.Context, userID string) ([]model.PullRe
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
 		}
-		log.Error("failed to get user reviews", "error", err)
+		log.ErrorContext(ctx, "failed to get user reviews", "error", err)
 		return nil, err
 	}
 	return prs, nil
 }
 
-func (s *Service) GetReviewCandidates(ctx context.Context, teamName string, excludeUserID string) ([]model.User, error) {
+func (s *Service) GetReviewCandidates(
+	ctx context.Context,
+	teamName string,
+	excludeUserID string,
+) ([]model.User, error) {
 	log := s.log.With("op", "GetReviewCandidates", "team", teamName)
 
 	users, err := s.repo.GetReviewCandidates(ctx, teamName, excludeUserID)
 	if err != nil {
-		log.Error("failed to fetch candidates", "error", err)
+		log.ErrorContext(ctx, "failed to fetch candidates", "error", err)
 		return nil, err
 	}
 	return users, nil
@@ -68,26 +72,30 @@ func (s *Service) GetByID(ctx context.Context, id string) (*model.User, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			s.log.Error("failed to get user by id", "op", "GetByID", "user_id", id, "error", err)
+			s.log.ErrorContext(ctx, "failed to get user by id", "op", "GetByID", "user_id", id, "error", err)
 		}
 		return nil, err
 	}
 	return user, nil
 }
 
-func (s *Service) GetReplacementCandidate(ctx context.Context, teamName string, excludeUserIDs []string) (*model.User, error) {
+func (s *Service) GetReplacementCandidate(
+	ctx context.Context,
+	teamName string,
+	excludeUserIDs []string,
+) (*model.User, error) {
 	log := s.log.With("op", "GetReplacementCandidate", "team", teamName, "excluded_count", len(excludeUserIDs))
 
 	candidate, err := s.repo.GetReplacementCandidate(ctx, teamName, excludeUserIDs)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Warn("no replacement candidate found")
+			log.WarnContext(ctx, "no replacement candidate found")
 			return nil, err
 		}
-		log.Error("failed to find replacement", "error", err)
+		log.ErrorContext(ctx, "failed to find replacement", "error", err)
 		return nil, err
 	}
 
-	log.Info("replacement candidate selected", "candidate_id", candidate.ID)
+	log.InfoContext(ctx, "replacement candidate selected", "candidate_id", candidate.ID)
 	return candidate, nil
 }

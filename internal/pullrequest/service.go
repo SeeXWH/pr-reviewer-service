@@ -35,16 +35,16 @@ func (s *Service) Create(ctx context.Context, pr model.PullRequest) (*model.Pull
 	author, err := s.userProvider.GetByID(ctx, pr.AuthorID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Warn("failed to create pr: author not found")
+			log.WarnContext(ctx, "failed to create pr: author not found")
 			return nil, ErrAuthorNotFound
 		}
-		log.Error("failed to fetch author", "error", err)
+		log.ErrorContext(ctx, "failed to fetch author", "error", err)
 		return nil, err
 	}
 
 	candidates, err := s.userProvider.GetReviewCandidates(ctx, author.TeamName, author.ID)
 	if err != nil {
-		log.Error("failed to fetch review candidates", "error", err)
+		log.ErrorContext(ctx, "failed to fetch review candidates", "error", err)
 		return nil, err
 	}
 
@@ -59,14 +59,14 @@ func (s *Service) Create(ctx context.Context, pr model.PullRequest) (*model.Pull
 	err = s.repo.Create(ctx, &pr)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			log.Warn("pr already exists")
+			log.WarnContext(ctx, "pr already exists")
 			return nil, ErrPRExists
 		}
-		log.Error("failed to create pr", "error", err)
+		log.ErrorContext(ctx, "failed to create pr", "error", err)
 		return nil, err
 	}
 
-	log.Info("pr created", "pr_id", pr.ID, "reviewers_count", len(pr.Reviewers))
+	log.InfoContext(ctx, "pr created", "pr_id", pr.ID, "reviewers_count", len(pr.Reviewers))
 	return &pr, nil
 }
 
@@ -78,7 +78,7 @@ func (s *Service) Merge(ctx context.Context, prID string) (*model.PullRequest, e
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPRNotFound
 		}
-		log.Error("failed to fetch pr", "error", err)
+		log.ErrorContext(ctx, "failed to fetch pr", "error", err)
 		return nil, err
 	}
 	if pr.Status == MergeStatus {
@@ -88,15 +88,19 @@ func (s *Service) Merge(ctx context.Context, prID string) (*model.PullRequest, e
 	now := time.Now()
 	pr.MergedAt = &now
 	if err = s.repo.Update(ctx, pr); err != nil {
-		log.Error("failed to update pr status", "error", err)
+		log.ErrorContext(ctx, "failed to update pr status", "error", err)
 		return nil, err
 	}
 
-	log.Info("pr merged")
+	log.InfoContext(ctx, "pr merged")
 	return pr, nil
 }
 
-func (s *Service) ReassignReviewer(ctx context.Context, prID string, oldUserID string) (*model.PullRequest, *model.User, error) {
+func (s *Service) ReassignReviewer(
+	ctx context.Context,
+	prID string,
+	oldUserID string,
+) (*model.PullRequest, *model.User, error) {
 	log := s.log.With("op", "ReassignReviewer", "pr_id", prID, "old_user_id", oldUserID)
 
 	pr, err := s.getAndValidatePR(ctx, prID)
@@ -105,12 +109,12 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID string, oldUserID s
 	}
 	excludeIDs, err := s.validateAssignmentAndGetExclusions(pr, oldUserID)
 	if err != nil {
-		log.Warn("validation failed", "error", err)
+		log.WarnContext(ctx, "validation failed", "error", err)
 		return nil, nil, err
 	}
 	author, err := s.userProvider.GetByID(ctx, pr.AuthorID)
 	if err != nil {
-		log.Error("failed to fetch author details", "error", err)
+		log.ErrorContext(ctx, "failed to fetch author details", "error", err)
 		return nil, nil, err
 	}
 	newReviewer, err := s.findReplacement(ctx, author.TeamName, excludeIDs)
@@ -119,11 +123,11 @@ func (s *Service) ReassignReviewer(ctx context.Context, prID string, oldUserID s
 	}
 	pr.Reviewers = replaceReviewerInSlice(pr.Reviewers, oldUserID, newReviewer)
 	if err = s.repo.UpdateReviewers(ctx, pr); err != nil {
-		log.Error("failed to update reviewers list", "error", err)
+		log.ErrorContext(ctx, "failed to update reviewers list", "error", err)
 		return nil, nil, err
 	}
 
-	log.Info("reviewer reassigned", "new_user_id", newReviewer.ID)
+	log.InfoContext(ctx, "reviewer reassigned", "new_user_id", newReviewer.ID)
 	return pr, newReviewer, nil
 }
 
@@ -133,7 +137,7 @@ func (s *Service) getAndValidatePR(ctx context.Context, prID string) (*model.Pul
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPRNotFound
 		}
-		s.log.Error("failed to fetch pr by id", "op", "getAndValidatePR", "pr_id", prID, "error", err)
+		s.log.ErrorContext(ctx, "failed to fetch pr by id", "op", "getAndValidatePR", "pr_id", prID, "error", err)
 		return nil, err
 	}
 	if pr.Status == MergeStatus {
@@ -161,10 +165,10 @@ func (s *Service) findReplacement(ctx context.Context, teamName string, excludeI
 	newReviewer, err := s.userProvider.GetReplacementCandidate(ctx, teamName, excludeIDs)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.log.Warn("no replacement candidate available", "op", "findReplacement", "team", teamName)
+			s.log.WarnContext(ctx, "no replacement candidate available", "op", "findReplacement", "team", teamName)
 			return nil, ErrNoCandidate
 		}
-		s.log.Error("failed to find replacement candidate", "op", "findReplacement", "error", err)
+		s.log.ErrorContext(ctx, "failed to find replacement candidate", "op", "findReplacement", "error", err)
 		return nil, err
 	}
 	return newReviewer, nil

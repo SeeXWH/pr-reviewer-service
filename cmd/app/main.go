@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/SeeXWH/pr-reviewer-service/configs"
+	"github.com/SeeXWH/pr-reviewer-service/internal/analytics"
 	"github.com/SeeXWH/pr-reviewer-service/internal/pullrequest"
 	"github.com/SeeXWH/pr-reviewer-service/internal/team"
 	"github.com/SeeXWH/pr-reviewer-service/internal/user"
@@ -28,24 +29,28 @@ func main() {
 	conf := configs.Load()
 	log.Info("config loaded", "db_host", conf.DB.Host, "db_port", conf.DB.Port)
 
-	postgresDb := db.NewPostgresDb(conf)
+	postgresDB := db.NewPostgresDB(conf)
 	mainRouter := http.NewServeMux()
 
-	teamRepository := team.NewRepository(postgresDb)
-	userRepository := user.NewRepository(postgresDb)
-	prRepository := pullrequest.NewRepository(postgresDb)
+	teamRepository := team.NewRepository(postgresDB)
+	userRepository := user.NewRepository(postgresDB)
+	prRepository := pullrequest.NewRepository(postgresDB)
+	analyticRepository := analytics.NewRepository(postgresDB)
 
 	teamService := team.NewService(teamRepository, log)
 	userService := user.NewService(userRepository, log)
 	prService := pullrequest.NewService(userService, prRepository, log)
+	analyticsService := analytics.NewService(analyticRepository, log)
 
-	user.NewHandler(mainRouter, userService)
-	team.NewHandler(mainRouter, teamService)
-	pullrequest.NewHandler(mainRouter, prService)
+	user.NewHandler(mainRouter, userService, conf)
+	team.NewHandler(mainRouter, teamService, conf)
+	pullrequest.NewHandler(mainRouter, prService, conf)
+	analytics.NewHandler(mainRouter, analyticsService, conf)
 
 	server := http.Server{
-		Addr:    conf.App.Port,
-		Handler: middleware.Logging(mainRouter),
+		Addr:              conf.App.Port,
+		Handler:           middleware.Logging(mainRouter),
+		ReadHeaderTimeout: conf.App.TimeOut,
 	}
 	go func() {
 		log.Info("server started",

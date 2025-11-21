@@ -4,19 +4,21 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
+	"github.com/SeeXWH/pr-reviewer-service/configs"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/req"
 	"github.com/SeeXWH/pr-reviewer-service/pkg/res"
 )
 
 type Handler struct {
 	userService Provider
+	conf        *configs.Config
 }
 
-func NewHandler(router *http.ServeMux, userService Provider) {
+func NewHandler(router *http.ServeMux, userService Provider, conf *configs.Config) {
 	handler := &Handler{
 		userService: userService,
+		conf:        conf,
 	}
 	router.HandleFunc("POST /users/setIsActive", handler.UpdateStatus())
 	router.HandleFunc("GET /users/getReview", handler.GetReviews())
@@ -24,7 +26,7 @@ func NewHandler(router *http.ServeMux, userService Provider) {
 
 func (h *Handler) UpdateStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 		reqBody, err := req.HandleBody[SetActiveRequestDTO](r)
 		if err != nil {
@@ -57,7 +59,7 @@ func (h *Handler) UpdateStatus() http.HandlerFunc {
 
 func (h *Handler) GetReviews() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
 		defer cancel()
 
 		userID := r.URL.Query().Get("user_id")

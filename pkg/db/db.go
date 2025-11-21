@@ -9,22 +9,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostgresDb struct {
-	PostgresDb *gorm.DB
+type PostgresDB struct {
+	PostgresDB *gorm.DB
 }
 
-func NewPostgresDb(conf *configs.Config) *PostgresDb {
-	DSN := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s", conf.DB.Host,
+func NewPostgresDB(conf *configs.Config) *PostgresDB {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s", conf.DB.Host,
 		conf.DB.Username,
 		conf.DB.Password,
 		conf.DB.Port,
 		conf.DB.Dbname,
 		"disable")
-	db, err := gorm.Open(postgres.Open(DSN), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-	return &PostgresDb{db}
+	return &PostgresDB{db}
 }
