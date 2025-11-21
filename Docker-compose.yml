@@ -4,9 +4,11 @@ services:
     platform: linux/amd64
     container_name: postgres
     ports:
-      - "5430:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
     environment:
       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
       POSTGRES_USER: ${POSTGRES_USER}
