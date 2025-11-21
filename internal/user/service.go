@@ -99,3 +99,12 @@ func (s *Service) GetReplacementCandidate(
 	log.InfoContext(ctx, "replacement candidate selected", "candidate_id", candidate.ID)
 	return candidate, nil
 }
+
+func (s *Service) MassDeactivate(ctx context.Context, teamName string, userIDs []string) (MassDeactivateResult, error) {
+	result, err := s.repo.MassDeactivateAndReassign(ctx, teamName, userIDs)
+	if err != nil {
+		s.log.ErrorContext(ctx, "failed to mass deactivation", "error", err)
+		return MassDeactivateResult{}, err
+	}
+	return result, nil
+}

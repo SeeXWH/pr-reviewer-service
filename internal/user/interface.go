@@ -9,6 +9,7 @@ import (
 type Provider interface {
 	SetIsActive(context.Context, string, bool) (*model.User, error)
 	GetReviews(context.Context, string) ([]model.PullRequest, error)
+	MassDeactivate(context.Context, string, []string) (MassDeactivateResult, error)
 }
 
 type Storer interface {
@@ -17,4 +18,5 @@ type Storer interface {
 	GetByID(context.Context, string) (*model.User, error)
 	GetReviewCandidates(context.Context, string, string) ([]model.User, error)
 	GetReplacementCandidate(context.Context, string, []string) (*model.User, error)
+	MassDeactivateAndReassign(context.Context, string, []string) (MassDeactivateResult, error)
 }

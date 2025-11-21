@@ -22,6 +22,7 @@ func NewHandler(router *http.ServeMux, userService Provider, conf *configs.Confi
 	}
 	router.HandleFunc("POST /users/setIsActive", handler.UpdateStatus())
 	router.HandleFunc("GET /users/getReview", handler.GetReviews())
+	router.HandleFunc("POST /user/massDeactivate", handler.MassDeactivate())
 }
 
 func (h *Handler) UpdateStatus() http.HandlerFunc {
@@ -81,6 +82,29 @@ func (h *Handler) GetReviews() http.HandlerFunc {
 		}
 
 		resp := ToReviewsResponse(userID, prModels)
+		res.JSON(w, http.StatusOK, resp)
+	}
+}
+
+func (h *Handler) MassDeactivate() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), h.conf.App.TimeOut)
+		defer cancel()
+		reqBody, err := req.HandleBody[MassDeactivateRequestDTO](r)
+		if err != nil {
+			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "invalid json")
+			return
+		}
+		if reqBody.TeamName == "" || len(reqBody.UserIDs) == 0 {
+			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "team_name and user_ids are required")
+			return
+		}
+		result, err := h.userService.MassDeactivate(ctx, reqBody.TeamName, reqBody.UserIDs)
+		if err != nil {
+			res.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", err.Error())
+			return
+		}
+		resp := ToMassDeactivateResponse(result)
 		res.JSON(w, http.StatusOK, resp)
 	}
 }

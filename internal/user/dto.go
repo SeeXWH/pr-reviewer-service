@@ -27,3 +27,12 @@ type ReviewsResponseDTO struct {
 	UserID       string                `json:"user_id"`
 	PullRequests []PullRequestShortDTO `json:"pull_requests"`
 }
+type MassDeactivateRequestDTO struct {
+	TeamName string   `json:"team_name"`
+	UserIDs  []string `json:"user_ids"`
+}
+
+type MassDeactivateResponseDTO struct {
+	DeactivatedCount int `json:"deactivated_count"`
+	ReassignedPRs    int `json:"reassigned_prs_count"`
+}

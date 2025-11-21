@@ -34,3 +34,10 @@ func ToReviewsResponse(userID string, prs []model.PullRequest) ReviewsResponseDT
 		PullRequests: prDTOs,
 	}
 }
+
+func ToMassDeactivateResponse(res MassDeactivateResult) MassDeactivateResponseDTO {
+	return MassDeactivateResponseDTO{
+		DeactivatedCount: res.DeactivatedCount,
+		ReassignedPRs:    res.ReassignedCount,
+	}
+}
