@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	DB DB
+	DB  DB
+	App App
 }
 
 type DB struct {
@@ -16,6 +17,10 @@ type DB struct {
 	Dbname   string
 	Host     string
 	Port     string
+}
+
+type App struct {
+	Port string
 }
 
 func Load() *Config {
@@ -27,6 +32,9 @@ func Load() *Config {
 			Dbname:   os.Getenv("POSTGRES_DB"),
 			Host:     os.Getenv("POSTGRES_HOST"),
 			Port:     os.Getenv("POSTGRES_PORT"),
+		},
+		App: App{
+			Port: os.Getenv("APP_PORT"),
 		},
 	}
 }

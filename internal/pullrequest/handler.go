@@ -29,7 +29,6 @@ func (h *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), 300*time.Millisecond)
 		defer cancel()
-
 		reqBody, err := req.HandleBody[CreatePRRequestDTO](r)
 		if err != nil {
 			res.Error(w, http.StatusBadRequest, "BAD_REQUEST", "invalid json")
