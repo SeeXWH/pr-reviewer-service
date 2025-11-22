@@ -1,4 +1,4 @@
-.PHONY: run stop test lint
+.PHONY: run stop test lint test-integration
 run:
 	docker-compose up --build
 
@@ -10,3 +10,6 @@ test:
 
 lint:
 	golangci-lint run
+
+test-integration:
+	go test -v -tags=integration ./tests/...
