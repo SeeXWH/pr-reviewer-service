@@ -155,11 +155,6 @@ func (r *Repository) getAffectedPRs(tx *gorm.DB, userIDs []string) ([]affectedPR
 	return rows, err
 }
 
-type prReviewer struct {
-	PullRequestID string `gorm:"column:pull_request_id"`
-	UserID        string `gorm:"column:user_id"`
-}
-
 func (r *Repository) calculateReplacements(rows []affectedPR, candidates []model.User) ([]prReviewer, int) {
 	var newRelations []prReviewer
 	reassignedCount := 0

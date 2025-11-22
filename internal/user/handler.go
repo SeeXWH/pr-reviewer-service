@@ -22,7 +22,7 @@ func NewHandler(router *http.ServeMux, userService Provider, conf *configs.Confi
 	}
 	router.HandleFunc("POST /users/setIsActive", handler.UpdateStatus())
 	router.HandleFunc("GET /users/getReview", handler.GetReviews())
-	router.HandleFunc("POST /user/massDeactivate", handler.MassDeactivate())
+	router.HandleFunc("POST /users/massDeactivate", handler.MassDeactivate())
 }
 
 func (h *Handler) UpdateStatus() http.HandlerFunc {

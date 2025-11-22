@@ -13,18 +13,30 @@ type PostgresDB struct {
 	PostgresDB *gorm.DB
 }
 
-func NewPostgresDB(conf *configs.Config) *PostgresDB {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s", conf.DB.Host,
+func NewPostgresDB(conf *configs.Config) (*PostgresDB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=%s",
+		conf.DB.Host,
 		conf.DB.Username,
 		conf.DB.Password,
 		conf.DB.Port,
 		conf.DB.Dbname,
-		"disable")
+		"disable",
+	)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &PostgresDB{db}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+	if err = sqlDB.Ping(); err != nil {
+		return nil, err
+	}
+
+	return &PostgresDB{db}, nil
 }

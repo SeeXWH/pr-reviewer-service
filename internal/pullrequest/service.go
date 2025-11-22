@@ -13,6 +13,7 @@ import (
 
 const (
 	MergeStatus = "MERGED"
+	OpenStatus  = "OPEN"
 )
 
 type Service struct {
@@ -48,7 +49,7 @@ func (s *Service) Create(ctx context.Context, pr model.PullRequest) (*model.Pull
 		return nil, err
 	}
 
-	pr.Status = "OPEN"
+	pr.Status = OpenStatus
 	pr.CreatedAt = time.Now()
 
 	pr.Reviewers = make([]*model.User, len(candidates))

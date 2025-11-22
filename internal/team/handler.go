@@ -38,7 +38,7 @@ func (h *Handler) Create() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, ErrTeamExists):
-				res.Error(w, http.StatusBadRequest, "BAD_REQUEST", err.Error())
+				res.Error(w, http.StatusBadRequest, "TEAM_EXISTS", err.Error())
 				return
 			default:
 				res.Error(w, http.StatusInternalServerError, "UNKNOWN_ERR", "unknown error")

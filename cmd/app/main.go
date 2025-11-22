@@ -29,7 +29,11 @@ func main() {
 	conf := configs.Load()
 	log.Info("config loaded", "db_host", conf.DB.Host, "db_port", conf.DB.Port)
 
-	postgresDB := db.NewPostgresDB(conf)
+	postgresDB, err := db.NewPostgresDB(conf)
+	if err != nil {
+		log.Warn("failed to connect to postgres", "error", err)
+		os.Exit(1)
+	}
 	mainRouter := http.NewServeMux()
 
 	teamRepository := team.NewRepository(postgresDB)
@@ -57,7 +61,7 @@ func main() {
 			"address", conf.App.Port,
 			"startup_duration", time.Since(start).String(),
 		)
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err = server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("listen failed", "error", err)
 			os.Exit(1)
 		}
@@ -69,7 +73,7 @@ func main() {
 	log.Info("shutting down server")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
+	if err = server.Shutdown(ctx); err != nil {
 		log.Error("Server forced to shutdown", "error", err)
 	}
 	log.Info("Server exited properly")
